@@ -13,8 +13,11 @@ public class ProductService {
 
     protected ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
+    protected RestTemplate restTemplate;
+
+    public ProductService(ProductRepository productRepository, RestTemplate restTemplate) {
         this.productRepository = productRepository;
+        this.restTemplate = restTemplate;
     }
 
     protected ResponseEntity<List<ProductResponse>> findAll() {
@@ -55,8 +58,6 @@ public class ProductService {
     }
 
     private void saveOrUpdateProduct(Product product, ProductCreationDTO productCreationDTO) {
-        RestTemplate restTemplate = new RestTemplate();
-
         product.setName(productCreationDTO.getName());
         product.setPrice(productCreationDTO.getPrice());
         product.setSku(productCreationDTO.getSku());
@@ -65,7 +66,7 @@ public class ProductService {
 
         if (productCreationDTO.getBrand_id() != null) {
             Brand brand = restTemplate.getForObject(
-                    "http://localhost:8091/api/brands/" + productCreationDTO.getBrand_id(),
+                    "http://BRAND:8091/api/brands/" + productCreationDTO.getBrand_id(),
                     Brand.class
             );
 
@@ -103,9 +104,8 @@ public class ProductService {
 //                    .toList();
 //        }
 
-        RestTemplate restTemplate = new RestTemplate();
         Brand brand = restTemplate.getForObject(
-                "http://localhost:8091/api/brands/" + product.getBrandId(),
+                "http://BRAND:8091/api/brands/" + product.getBrandId(),
                 Brand.class
         );
 
