@@ -94,16 +94,6 @@ public class ProductService {
     }
 
     private ProductResponse convertToDTO(Product product) {
-//        BrandResponse brandResponse = null;
-//        Brand brand = product.getBrand();
-
-//        if (brand != null) {
-//            brandResponse = new BrandResponse(
-//                    brand.getId(),
-//                    brand.getName()
-//            );
-//        }
-
 //        List<CategoryResponse> categoryResponses = null;
 //        List<Category> categories = product.getCategories();
 
@@ -113,15 +103,20 @@ public class ProductService {
 //                    .toList();
 //        }
 
+        RestTemplate restTemplate = new RestTemplate();
+        Brand brand = restTemplate.getForObject(
+                "http://localhost:8091/api/brands/" + product.getBrandId(),
+                Brand.class
+        );
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
                 product.getSku(),
                 product.getQty(),
-                product.getInStock()
-//                brandResponse,
-//                categoryResponses
+                product.getInStock(),
+                brand
         );
     }
 

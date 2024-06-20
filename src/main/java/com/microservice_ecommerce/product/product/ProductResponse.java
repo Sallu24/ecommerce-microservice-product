@@ -1,5 +1,7 @@
 package com.microservice_ecommerce.product.product;
 
+import com.microservice_ecommerce.product.product.external.Brand;
+
 public class ProductResponse {
 
     protected Long id;
@@ -14,13 +16,16 @@ public class ProductResponse {
 
     private Boolean inStock;
 
+    private Brand brand;
+
     public ProductResponse(
             Long id,
             String name,
             Double price,
             String sku,
             Integer qty,
-            Boolean inStock
+            Boolean inStock,
+            Brand brand
     ) {
         this.id = id;
         this.name = name;
@@ -28,6 +33,7 @@ public class ProductResponse {
         this.sku = sku;
         this.qty = qty;
         this.inStock = inStock;
+        this.brand = brand;
     }
 
     public Long getId() {
@@ -76,6 +82,14 @@ public class ProductResponse {
 
     public void setInStock(Boolean inStock) {
         this.inStock = inStock;
+    }
+
+    public Brand getBrand() {
+        return brand;
+    }
+
+    public void setBrand(Brand brand) {
+        this.brand = brand;
     }
 
     @Override
