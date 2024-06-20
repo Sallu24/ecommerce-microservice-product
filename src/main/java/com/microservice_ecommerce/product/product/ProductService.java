@@ -1,7 +1,9 @@
 package com.microservice_ecommerce.product.product;
 
+import com.microservice_ecommerce.product.product.external.Brand;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +36,7 @@ public class ProductService {
 
     protected ProductResponse view(Long id) {
         Product product = findById(id);
+
         return convertToDTO(product);
     }
 
@@ -47,10 +50,13 @@ public class ProductService {
 
     protected void delete(Long id) {
         Product existingProduct = findById(id);
+
         productRepository.deleteById(existingProduct.getId());
     }
 
     private void saveOrUpdateProduct(Product product, ProductCreationDTO productCreationDTO) {
+        RestTemplate restTemplate = new RestTemplate();
+
         product.setName(productCreationDTO.getName());
         product.setPrice(productCreationDTO.getPrice());
         product.setSku(productCreationDTO.getSku());
@@ -58,10 +64,14 @@ public class ProductService {
         product.setInStock(productCreationDTO.getIn_stock());
 
         if (productCreationDTO.getBrand_id() != null) {
-            product.setBrandId(productCreationDTO.getBrand_id());
-//            Brand brand = brandRepository.findById(productCreationDTO.getBrand_id())
-//                    .orElseThrow(() -> new BrandNotFoundException("Brand not found with id: " + productCreationDTO.getBrand_id()));
-//            product.setBrand(brand);
+            Brand brand = restTemplate.getForObject(
+                    "http://localhost:8091/api/brands/" + productCreationDTO.getBrand_id(),
+                    Brand.class
+            );
+
+            if (brand != null) {
+                product.setBrandId(brand.getId());
+            }
         }
 
         if (productCreationDTO.getCategory_ids() != null) {
