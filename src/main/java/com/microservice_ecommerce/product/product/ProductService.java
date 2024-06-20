@@ -92,7 +92,7 @@ public class ProductService {
 
             for (Long categoryId : categoryIds) {
                 Category category = restTemplate.getForObject(
-                        "http://CATEGORY:8091/api/categories/" + categoryId,
+                        "http://CATEGORY:8092/api/categories/" + categoryId,
                         Category.class
                 );
 
@@ -122,7 +122,7 @@ public class ProductService {
             categories = categoryProducts.stream()
                     .map(categoryProduct -> {
                         Category category = restTemplate.getForObject(
-                                "http://CATEGORY:8091/api/categories/" + categoryProduct.getCategoryId(),
+                                "http://CATEGORY:8092/api/categories/" + categoryProduct.getCategoryId(),
                                 Category.class
                         );
 
