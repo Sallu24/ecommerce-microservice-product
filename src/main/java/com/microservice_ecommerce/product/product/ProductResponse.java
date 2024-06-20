@@ -36,6 +36,8 @@ public class ProductResponse {
         this.brand = brand;
     }
 
+    public ProductResponse(){}
+
     public Long getId() {
         return id;
     }

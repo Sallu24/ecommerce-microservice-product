@@ -1,6 +1,7 @@
 package com.microservice_ecommerce.product.product;
 
 import com.microservice_ecommerce.product.product.external.Brand;
+import com.microservice_ecommerce.product.product.mapper.ProductMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -109,15 +110,7 @@ public class ProductService {
                 Brand.class
         );
 
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getSku(),
-                product.getQty(),
-                product.getInStock(),
-                brand
-        );
+        return ProductMapper.productResponse(product, brand);
     }
 
 }
