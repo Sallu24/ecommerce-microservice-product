@@ -1,6 +1,9 @@
 package com.microservice_ecommerce.product.product;
 
 import com.microservice_ecommerce.product.product.external.Brand;
+import com.microservice_ecommerce.product.product.external.Category;
+
+import java.util.List;
 
 public class ProductResponse {
 
@@ -18,6 +21,8 @@ public class ProductResponse {
 
     private Brand brand;
 
+    private List<Category> categories;
+
     public ProductResponse(
             Long id,
             String name,
@@ -25,7 +30,8 @@ public class ProductResponse {
             String sku,
             Integer qty,
             Boolean inStock,
-            Brand brand
+            Brand brand,
+            List<Category> categories
     ) {
         this.id = id;
         this.name = name;
@@ -34,6 +40,7 @@ public class ProductResponse {
         this.qty = qty;
         this.inStock = inStock;
         this.brand = brand;
+        this.categories = categories;
     }
 
     public ProductResponse(){}
@@ -92,6 +99,14 @@ public class ProductResponse {
 
     public void setBrand(Brand brand) {
         this.brand = brand;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 
     @Override

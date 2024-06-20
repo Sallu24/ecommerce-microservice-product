@@ -14,7 +14,7 @@ public class ProductCreationDTO {
 
     @NotNull(message = "Category ids must not be null")
     @NotEmpty(message = "Category ids must not be empty")
-    private List<Integer> category_ids;
+    private List<Long> category_ids;
 
     @Size(min = 2, max = 199)
     private String name;
@@ -33,7 +33,7 @@ public class ProductCreationDTO {
     public ProductCreationDTO(
             Long id,
             Long brand_id,
-            List<Integer> category_ids,
+            List<Long> category_ids,
             String name,
             Double price,
             String sku,
@@ -66,11 +66,11 @@ public class ProductCreationDTO {
         this.brand_id = brand_id;
     }
 
-    public List<Integer> getCategory_ids() {
+    public List<Long> getCategory_ids() {
         return category_ids;
     }
 
-    public void setCategory_ids(List<Integer> category_ids) {
+    public void setCategory_ids(List<Long> category_ids) {
         this.category_ids = category_ids;
     }
 

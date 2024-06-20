@@ -1,11 +1,13 @@
 package com.microservice_ecommerce.product.product;
 
 import com.microservice_ecommerce.product.product.external.Brand;
+import com.microservice_ecommerce.product.product.external.Category;
 import com.microservice_ecommerce.product.product.mapper.ProductMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,11 +16,18 @@ public class ProductService {
 
     protected ProductRepository productRepository;
 
+    protected CategoryProductRepository categoryProductRepository;
+
     protected RestTemplate restTemplate;
 
-    public ProductService(ProductRepository productRepository, RestTemplate restTemplate) {
+    public ProductService(
+            ProductRepository productRepository,
+            RestTemplate restTemplate,
+            CategoryProductRepository categoryProductRepository
+    ) {
         this.productRepository = productRepository;
         this.restTemplate = restTemplate;
+        this.categoryProductRepository = categoryProductRepository;
     }
 
     protected ResponseEntity<List<ProductResponse>> findAll() {
@@ -34,8 +43,6 @@ public class ProductService {
         Product product = new Product();
 
         saveOrUpdateProduct(product, productCreationDTO);
-
-        productRepository.save(product);
     }
 
     protected ProductResponse view(Long id) {
@@ -48,8 +55,6 @@ public class ProductService {
         Product existingProduct = findById(id);
 
         saveOrUpdateProduct(existingProduct, productCreationDTO);
-
-        productRepository.save(existingProduct);
     }
 
     protected void delete(Long id) {
@@ -76,16 +81,29 @@ public class ProductService {
             }
         }
 
-        if (productCreationDTO.getCategory_ids() != null) {
-//            List<Category> categories = productCreationDTO.getCategory_ids().stream()
-//                    .map(
-//                            categoryId -> categoryRepository.findById(categoryId)
-//                                    .orElseThrow(
-//                                            () -> new CategoryNotFoundException("No category found against this id: " + categoryId)
-//                                    )
-//                    )
-//                    .collect(Collectors.toList());
-//            product.setCategories(categories);
+        productRepository.save(product);
+
+        syncCategories(product, productCreationDTO.getCategory_ids());
+    }
+
+    private void syncCategories(Product product, List<Long> categoryIds) {
+        if (categoryIds != null) {
+            categoryProductRepository.deleteByProductId(product.getId());
+
+            for (Long categoryId : categoryIds) {
+                Category category = restTemplate.getForObject(
+                        "http://CATEGORY:8091/api/categories/" + categoryId,
+                        Category.class
+                );
+
+                if (category != null) {
+                    CategoryProduct categoryProduct = new CategoryProduct();
+                    categoryProduct.setCategoryId(category.getId());
+                    categoryProduct.setProduct(product);
+
+                    categoryProductRepository.save(categoryProduct);
+                }
+            }
         }
     }
 
@@ -96,21 +114,33 @@ public class ProductService {
     }
 
     private ProductResponse convertToDTO(Product product) {
-//        List<CategoryResponse> categoryResponses = null;
-//        List<Category> categories = product.getCategories();
+        List<Category> categories = new ArrayList<>();
 
-//        if (categories != null && !categories.isEmpty()) {
-//            categoryResponses = categories.stream()
-//                    .map(category -> new CategoryResponse(category.getId(), category.getName()))
-//                    .toList();
-//        }
+        List<CategoryProduct> categoryProducts = product.getCategoryProducts();
+
+        if (categoryProducts != null && !categoryProducts.isEmpty()) {
+            categories = categoryProducts.stream()
+                    .map(categoryProduct -> {
+                        Category category = restTemplate.getForObject(
+                                "http://CATEGORY:8091/api/categories/" + categoryProduct.getCategoryId(),
+                                Category.class
+                        );
+
+                        if (category != null) {
+                            return new Category(category.getId(), category.getName());
+                        }
+
+                        return null;
+                    })
+                    .toList();
+        }
 
         Brand brand = restTemplate.getForObject(
                 "http://BRAND:8091/api/brands/" + product.getBrandId(),
                 Brand.class
         );
 
-        return ProductMapper.productResponse(product, brand);
+        return ProductMapper.productResponse(product, brand, categories);
     }
 
 }

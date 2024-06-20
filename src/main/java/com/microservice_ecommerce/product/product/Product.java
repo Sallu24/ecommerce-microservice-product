@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -36,12 +37,8 @@ public class Product {
     @UpdateTimestamp
     private Date updatedAt;
 
-//    @JoinTable(
-//            name = "category_product",
-//            joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "category_id")
-//    )
-//    private Long categoryId;
+    @OneToMany(mappedBy = "product")
+    private List<CategoryProduct> categoryProducts;
 
     public Product(
             Long id,
@@ -51,7 +48,8 @@ public class Product {
             Integer qty,
             Boolean inStock,
             Date createdAt,
-            Date updatedAt
+            Date updatedAt,
+            List<CategoryProduct> categoryProducts
     ) {
         this.id = id;
         this.name = name;
@@ -61,6 +59,7 @@ public class Product {
         this.inStock = inStock;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.categoryProducts = categoryProducts;
     }
 
     public Product() {
@@ -139,14 +138,13 @@ public class Product {
         this.updatedAt = updatedAt;
     }
 
-//    public List<Category> getCategories() {
-//        return categories;
-//    }
+    public List<CategoryProduct> getCategoryProducts() {
+        return categoryProducts;
+    }
 
-//    public void setCategories(List<Category> categories) {
-//        this.categories = categories;
-//    }
-
+    public void setCategoryProducts(List<CategoryProduct> categoryProducts) {
+        this.categoryProducts = categoryProducts;
+    }
 
     @Override
     public String toString() {
@@ -157,7 +155,6 @@ public class Product {
                 ", sku='" + sku + '\'' +
                 ", qty=" + qty +
                 ", inStock=" + inStock +
-                ", brandId=" + brandId +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
