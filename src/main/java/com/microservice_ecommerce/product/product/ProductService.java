@@ -1,11 +1,12 @@
 package com.microservice_ecommerce.product.product;
 
+import com.microservice_ecommerce.product.product.clients.BrandClient;
+import com.microservice_ecommerce.product.product.clients.CategoryClient;
 import com.microservice_ecommerce.product.product.external.Brand;
 import com.microservice_ecommerce.product.product.external.Category;
 import com.microservice_ecommerce.product.product.mapper.ProductMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,19 +16,20 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     protected ProductRepository productRepository;
-
     protected CategoryProductRepository categoryProductRepository;
-
-    protected RestTemplate restTemplate;
+    protected BrandClient brandClient;
+    protected CategoryClient categoryClient;
 
     public ProductService(
             ProductRepository productRepository,
-            RestTemplate restTemplate,
-            CategoryProductRepository categoryProductRepository
+            CategoryProductRepository categoryProductRepository,
+            BrandClient brandClient,
+            CategoryClient categoryClient
     ) {
         this.productRepository = productRepository;
-        this.restTemplate = restTemplate;
         this.categoryProductRepository = categoryProductRepository;
+        this.brandClient = brandClient;
+        this.categoryClient = categoryClient;
     }
 
     protected ResponseEntity<List<ProductResponse>> findAll() {
@@ -71,10 +73,7 @@ public class ProductService {
         product.setInStock(productCreationDTO.getIn_stock());
 
         if (productCreationDTO.getBrand_id() != null) {
-            Brand brand = restTemplate.getForObject(
-                    "http://BRAND:8091/api/brands/" + productCreationDTO.getBrand_id(),
-                    Brand.class
-            );
+            Brand brand = brandClient.getBrand(productCreationDTO.getBrand_id());
 
             if (brand != null) {
                 product.setBrandId(brand.getId());
@@ -91,10 +90,7 @@ public class ProductService {
             categoryProductRepository.deleteByProductId(product.getId());
 
             for (Long categoryId : categoryIds) {
-                Category category = restTemplate.getForObject(
-                        "http://CATEGORY:8092/api/categories/" + categoryId,
-                        Category.class
-                );
+                Category category = categoryClient.getCategory(categoryId);
 
                 if (category != null) {
                     CategoryProduct categoryProduct = new CategoryProduct();
@@ -121,10 +117,7 @@ public class ProductService {
         if (categoryProducts != null && !categoryProducts.isEmpty()) {
             categories = categoryProducts.stream()
                     .map(categoryProduct -> {
-                        Category category = restTemplate.getForObject(
-                                "http://CATEGORY:8092/api/categories/" + categoryProduct.getCategoryId(),
-                                Category.class
-                        );
+                        Category category = categoryClient.getCategory(categoryProduct.getCategoryId());
 
                         if (category != null) {
                             return new Category(category.getId(), category.getName());
@@ -135,12 +128,13 @@ public class ProductService {
                     .toList();
         }
 
-        Brand brand = restTemplate.getForObject(
-                "http://BRAND:8091/api/brands/" + product.getBrandId(),
-                Brand.class
-        );
+        if (product.getBrandId() != null) {
+            Brand brand = brandClient.getBrand(product.getBrandId());
 
-        return ProductMapper.productResponse(product, brand, categories);
+            return ProductMapper.productResponse(product, brand, categories);
+        }
+
+        return ProductMapper.productResponse(product, null, categories);
     }
 
 }
